@@ -1,4 +1,5 @@
 package com.example.habittracker.service;
+import com.example.habittracker.exception.ResourceNotFoundException;
 
 import com.example.habittracker.dto.HabitRequest;
 import com.example.habittracker.dto.HabitResponse;
@@ -50,7 +51,7 @@ public class HabitService {
     // Update an existing habit
     public HabitResponse updateHabit(Long id, HabitRequest request, String userEmail) {
         Habit habit = habitRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         if (!habit.getUserEmail().equals(userEmail)) {
             throw new RuntimeException("Unauthorized");
@@ -66,7 +67,7 @@ public class HabitService {
     // Delete a habit
     public void deleteHabit(Long id, String userEmail) {
         Habit habit = habitRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         if (!habit.getUserEmail().equals(userEmail)) {
             throw new RuntimeException("Unauthorized");

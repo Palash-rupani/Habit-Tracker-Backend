@@ -1,4 +1,5 @@
 package com.example.habittracker.service;
+import com.example.habittracker.exception.ResourceNotFoundException;
 
 import com.example.habittracker.dto.HabitLogResponse;
 import com.example.habittracker.entity.Habit;
@@ -36,7 +37,7 @@ public class HabitLogService {
     // Daily check-in
     public HabitLogResponse checkIn(Long habitId, String userEmail) {
         Habit habit = habitRepository.findById(habitId)
-                .orElseThrow(() -> new RuntimeException("Habit not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
 
         habitLogRepository.findByHabitIdAndCheckInDate(habitId, LocalDate.now())
                 .ifPresent(log -> {
@@ -51,13 +52,17 @@ public class HabitLogService {
         return toResponse(habitLogRepository.save(log));
     }
 
-    // Get all logs for a habit
-    public List<HabitLogResponse> getLogs(Long habitId) {
-        return habitLogRepository.findByHabitIdOrderByCheckInDateAsc(habitId)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
+// Get all logs for a habit
+public List<HabitLogResponse> getLogs(Long habitId) {
+    // Check if habit exists first
+    habitRepository.findById(habitId)
+            .orElseThrow(() -> new ResourceNotFoundException("Habit not found"));
+
+    return habitLogRepository.findByHabitIdOrderByCheckInDateAsc(habitId)
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+}
 
     // Calculate current streak
     public int getCurrentStreak(Long habitId) {
