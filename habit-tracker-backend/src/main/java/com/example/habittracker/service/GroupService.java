@@ -126,4 +126,43 @@ public class GroupService {
 
         groupMemberRepository.delete(member);
     }
+    // Check if user is ADMIN of a group
+private void checkIfAdmin(Long groupId, String userEmail) {
+    GroupMember member = groupMemberRepository
+            .findByGroupIdAndUserEmail(groupId, userEmail)
+            .orElseThrow(() -> new RuntimeException("You are not a member of this group"));
+
+    if (!member.getRole().equals("ADMIN")) {
+        throw new RuntimeException("You are not an admin of this group");
+    }
+}
+
+// Delete a group (ADMIN only)
+public void deleteGroup(Long groupId, String userEmail) {
+    groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+
+    checkIfAdmin(groupId, userEmail);
+
+    // Delete all members first
+    groupMemberRepository.findByGroupId(groupId)
+            .forEach(groupMemberRepository::delete);
+
+    groupRepository.deleteById(groupId);
+}
+
+// Promote a member to ADMIN (ADMIN only)
+public GroupMemberResponse promoteMember(Long groupId, String targetEmail, String userEmail) {
+    groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+
+    checkIfAdmin(groupId, userEmail);
+
+    GroupMember member = groupMemberRepository
+            .findByGroupIdAndUserEmail(groupId, targetEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("Member not found in this group"));
+
+    member.setRole("ADMIN");
+    return toMemberResponse(groupMemberRepository.save(member));
+}
 }

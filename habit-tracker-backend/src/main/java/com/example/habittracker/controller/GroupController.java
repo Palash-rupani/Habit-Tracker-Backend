@@ -74,4 +74,21 @@ public class GroupController {
         groupService.leaveGroup(id, email);
         return ResponseEntity.ok("Left group successfully");
     }
+    // DELETE a group (ADMIN only)
+@DeleteMapping("/{id}")
+public ResponseEntity<String> deleteGroup(@PathVariable Long id) {
+    String email = getLoggedInEmail();
+    groupService.deleteGroup(id, email);
+    return ResponseEntity.ok("Group deleted successfully");
+}
+
+// PROMOTE a member to ADMIN (ADMIN only)
+@PutMapping("/{id}/promote/{memberEmail}")
+public ResponseEntity<GroupMemberResponse> promoteMember(
+        @PathVariable Long id,
+        @PathVariable String memberEmail) {
+    String email = getLoggedInEmail();
+    GroupMemberResponse response = groupService.promoteMember(id, memberEmail, email);
+    return ResponseEntity.ok(response);
+}
 }
